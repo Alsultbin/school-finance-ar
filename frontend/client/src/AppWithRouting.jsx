@@ -1,9 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import './index.css';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
-// Import pages
+// Auth Pages
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+
+// Main Application Pages
 import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import Staff from './pages/Staff';
@@ -11,22 +16,34 @@ import Fees from './pages/Fees';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 
-function App() {
+const AppWithRouting = () => {
   return (
-    <LanguageProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/students" element={<Students />} />
-          <Route path="/staff" element={<Staff />} />
-          <Route path="/fees" element={<Fees />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
-    </LanguageProvider>
+    <Router>
+      <LanguageProvider>
+        <AuthProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            
+            {/* Protected Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/students" element={<Students />} />
+              <Route path="/staff" element={<Staff />} />
+              <Route path="/fees" element={<Fees />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
+            
+            {/* Redirect to login if no route matches */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </AuthProvider>
+      </LanguageProvider>
+    </Router>
   );
-}
+};
 
-export default App;
+export default AppWithRouting;

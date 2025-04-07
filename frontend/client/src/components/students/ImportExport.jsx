@@ -1,5 +1,10 @@
 import React, { useState, useContext } from 'react';
 import { LanguageContext } from '../../contexts/LanguageContext';
+import { 
+  exportStudents, 
+  importStudents, 
+  getImportTemplate 
+} from '../../utils/mockDataHandler';
 
 const ImportExport = ({ onImportSuccess }) => {
   const { translate } = useContext(LanguageContext);
@@ -8,44 +13,39 @@ const ImportExport = ({ onImportSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState({ type: '', message: '' });
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
-
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
   const handleImport = async () => {
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('file', file);
+    if (!file) {
+      setNotification({
+        type: 'error',
+        message: translate('please_select_file')
+      });
+      return;
+    }
 
     setLoading(true);
     setNotification({ type: '', message: '' });
 
     try {
-      const response = await fetch(`${API_URL}/api/import/students`, {
-        method: 'POST',
-        body: formData
+      // Use the mock data handler instead of a real API call
+      const result = await importStudents(file);
+      
+      setNotification({
+        type: 'success',
+        message: `${translate('successfully_imported')} ${result.count} ${translate('students')}`
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setNotification({
-          type: 'success',
-          message: `${translate('successfully_imported')} ${data.count} ${translate('students')}`
-        });
-        if (onImportSuccess) onImportSuccess();
-        setFile(null);
-        // Reset the file input
-        document.getElementById('fileInput').value = '';
-      } else {
-        throw new Error('Import failed');
-      }
+      
+      if (onImportSuccess) onImportSuccess(result.data);
+      setFile(null);
+      // Reset the file input
+      document.getElementById('fileInput').value = '';
     } catch (error) {
       setNotification({
         type: 'error',
-        message: translate('failed_to_import')
+        message: error.error || translate('failed_to_import')
       });
     } finally {
       setLoading(false);
@@ -57,33 +57,17 @@ const ImportExport = ({ onImportSuccess }) => {
     setNotification({ type: '', message: '' });
 
     try {
-      const response = await fetch(`${API_URL}/api/export/students?format=${exportFormat}`);
+      // Use the mock data handler instead of a real API call
+      await exportStudents(exportFormat);
       
-      if (response.ok) {
-        // Convert the response to a blob
-        const blob = await response.blob();
-        // Create a URL for the blob
-        const url = window.URL.createObjectURL(blob);
-        // Create a temporary anchor element
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `students_export.${exportFormat}`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        
-        setNotification({
-          type: 'success',
-          message: translate('export_successful')
-        });
-      } else {
-        throw new Error('Export failed');
-      }
+      setNotification({
+        type: 'success',
+        message: translate('export_successful')
+      });
     } catch (error) {
       setNotification({
         type: 'error',
-        message: translate('failed_to_export')
+        message: error.error || translate('failed_to_export')
       });
     } finally {
       setLoading(false);
@@ -91,7 +75,7 @@ const ImportExport = ({ onImportSuccess }) => {
   };
 
   const downloadTemplate = () => {
-    window.open(`${API_URL}/api/templates/students-import.csv`, '_blank');
+    getImportTemplate();
   };
 
   return (
@@ -107,12 +91,12 @@ const ImportExport = ({ onImportSuccess }) => {
         
         <div className="mb-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            {translate('select_file')} (CSV)
+            {translate('select_file')} (CSV, Excel)
           </label>
           <input
             id="fileInput"
             type="file"
-            accept=".csv"
+            accept=".csv,.xlsx,.xls"
             onChange={handleFileChange}
             className="block w-full text-sm text-gray-500
                       file:mr-4 file:py-2 file:px-4
@@ -134,8 +118,8 @@ const ImportExport = ({ onImportSuccess }) => {
           <button
             type="button"
             onClick={handleImport}
-            disabled={!file || loading}
-            className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white ${!file || loading ? 'bg-indigo-300' : 'bg-indigo-600 hover:bg-indigo-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+            disabled={loading}
+            className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white ${loading ? 'bg-indigo-300' : 'bg-indigo-600 hover:bg-indigo-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
           >
             {loading ? translate('importing') : translate('import')}
           </button>
