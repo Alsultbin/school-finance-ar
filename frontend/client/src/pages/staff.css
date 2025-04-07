@@ -1,0 +1,76 @@
+/* Staff Page Styles */
+.page-container {
+  padding: 24px;
+  background-color: var(--background-color);
+}
+
+.staff-header {
+  margin-bottom: 24px;
+}
+
+.staff-table {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Staff Form Styles */
+.staff-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-item {
+  margin-bottom: 16px;
+}
+
+/* Status Colors */
+.status-active {
+  color: #52c41a;
+}
+
+.status-inactive {
+  color: #ff4d4f;
+}
+
+.status-on-leave {
+  color: #faad14;
+}
+
+/* RTL Support */
+[dir="rtl"] .page-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .staff-header {
+  text-align: right;
+}
+
+[dir="rtl"] .staff-form {
+  margin: 0;
+  padding: 0 24px;
+}
+
+[dir="rtl"] .staff-table {
+  direction: rtl;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+  
+  .staff-header {
+    margin-bottom: 16px;
+  }
+  
+  .staff-table {
+    padding: 16px;
+  }
+  
+  .staff-form {
+    padding: 16px;
+  }
+}
