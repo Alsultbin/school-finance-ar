@@ -13,18 +13,16 @@ const translations = {
   ur: urTranslations
 };
 
-const defaultLanguage = 'ar'; // Default to Arabic
+const defaultLanguage = 'ar';
 
 export const LanguageProvider = ({ children }) => {
   const [language, setLanguage] = useState(() => {
-    // Get from localStorage or fallback to default
-    const savedLang = localStorage.getItem('language');
-    return savedLang && translations[savedLang] ? savedLang : defaultLanguage;
+    const savedLang = localStorage.getItem('language') || defaultLanguage;
+    return savedLang;
   });
 
   const [direction, setDirection] = useState(() => {
-    // Set initial direction based on default language
-    return defaultLanguage === 'ar' || defaultLanguage === 'ur' ? 'rtl' : 'ltr';
+    return language === 'ar' || language === 'ur' ? 'rtl' : 'ltr';
   });
 
   const translate = (key) => {
@@ -55,14 +53,7 @@ export const LanguageProvider = ({ children }) => {
       const newDirection = language === 'ar' || language === 'ur' ? 'rtl' : 'ltr';
       setDirection(newDirection);
       document.documentElement.dir = newDirection;
-      
-      // Update document language
       document.documentElement.lang = language;
-      
-      // Update HTML elements with dir attribute
-      document.querySelectorAll('[data-dir]').forEach(el => {
-        el.dir = newDirection;
-      });
       
       // Update all text content
       const elements = document.querySelectorAll('[data-translate]');
