@@ -1,9 +1,12 @@
 import React, { useState, useContext } from 'react';
 import { LanguageContext } from '../../contexts/LanguageContext';
 import { 
-  exportStudents, 
-  importStudents, 
-  getImportTemplate 
+  exportToCSV,
+  exportToExcel,
+  exportToPDF,
+  getImportTemplate,
+  parseCSVImport,
+  parseExcelImport
 } from '../../utils/mockDataHandler';
 
 const ImportExport = ({ onImportSuccess }) => {
@@ -30,8 +33,16 @@ const ImportExport = ({ onImportSuccess }) => {
     setNotification({ type: '', message: '' });
 
     try {
-      // Use the mock data handler instead of a real API call
-      const result = await importStudents(file);
+      const fileType = file.name.split('.').pop().toLowerCase();
+      let result;
+      
+      if (fileType === 'csv') {
+        result = await parseCSVImport(file);
+      } else if (['xlsx', 'xls'].includes(fileType)) {
+        result = await parseExcelImport(file);
+      } else {
+        throw new Error(translate('unsupported_file_format'));
+      }
       
       setNotification({
         type: 'success',
@@ -45,7 +56,7 @@ const ImportExport = ({ onImportSuccess }) => {
     } catch (error) {
       setNotification({
         type: 'error',
-        message: error.error || translate('failed_to_import')
+        message: error.message || translate('failed_to_import')
       });
     } finally {
       setLoading(false);
@@ -57,8 +68,13 @@ const ImportExport = ({ onImportSuccess }) => {
     setNotification({ type: '', message: '' });
 
     try {
-      // Use the mock data handler instead of a real API call
-      await exportStudents(exportFormat);
+      if (exportFormat === 'csv') {
+        await exportToCSV();
+      } else if (exportFormat === 'xlsx') {
+        await exportToExcel();
+      } else if (exportFormat === 'pdf') {
+        await exportToPDF();
+      }
       
       setNotification({
         type: 'success',
@@ -67,7 +83,7 @@ const ImportExport = ({ onImportSuccess }) => {
     } catch (error) {
       setNotification({
         type: 'error',
-        message: error.error || translate('failed_to_export')
+        message: error.message || translate('failed_to_export')
       });
     } finally {
       setLoading(false);

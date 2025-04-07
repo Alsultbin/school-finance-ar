@@ -1,26 +1,63 @@
 {
   "name": "school-finance-ar",
   "version": "1.0.0",
-  "description": "",
+  "description": "School Finance Management System",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
-  "keywords": [],
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "keywords": [
+    "school",
+    "finance",
+    "management",
+    "react"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@ant-design/icons": "^5.2.0",
+    "antd": "^5.15.1",
+    "axios": "^1.6.5",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "csv-parser": "^3.2.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-fileupload": "^1.5.1",
+    "file-saver": "^2.0.5",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.2",
+    "react": "^18.2.0",
     "react-csv": "^2.2.2",
-    "twilio": "^5.5.1"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.21.3",
+    "react-scripts": "5.0.1",
+    "twilio": "^5.5.1",
+    "xlsx": "^0.18.5",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.7.2"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",

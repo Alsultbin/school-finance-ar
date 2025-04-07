@@ -13,31 +13,78 @@ const translations = {
   ur: urTranslations
 };
 
+const defaultLanguage = 'ar'; // Default to Arabic
+
 export const LanguageProvider = ({ children }) => {
-  // Get from localStorage or default to Arabic
-  const [language, setLanguage] = useState(localStorage.getItem('language') || 'ar');
-  const [direction, setDirection] = useState('rtl');
+  const [language, setLanguage] = useState(() => {
+    // Get from localStorage or fallback to default
+    const savedLang = localStorage.getItem('language');
+    return savedLang && translations[savedLang] ? savedLang : defaultLanguage;
+  });
+
+  const [direction, setDirection] = useState(() => {
+    // Set initial direction based on default language
+    return defaultLanguage === 'ar' || defaultLanguage === 'ur' ? 'rtl' : 'ltr';
+  });
 
   const translate = (key) => {
-    if (!translations[language] || !translations[language][key]) {
-      // Fallback to English if translation is missing
-      return translations.en[key] || key;
+    try {
+      if (!translations[language]) {
+        console.error(`Translation for language ${language} not found`);
+        return key;
+      }
+      
+      const translation = translations[language][key];
+      if (!translation) {
+        console.warn(`Translation key ${key} not found in ${language}, falling back to English`);
+        return translations.en[key] || key;
+      }
+      return translation;
+    } catch (error) {
+      console.error(`Error in translation: ${error.message}`);
+      return key;
     }
-    return translations[language][key];
   };
 
   useEffect(() => {
-    localStorage.setItem('language', language);
-    // Set direction based on language
-    setDirection(language === 'ar' || language === 'ur' ? 'rtl' : 'ltr');
-    // Set HTML dir attribute
-    document.documentElement.dir = language === 'ar' || language === 'ur' ? 'rtl' : 'ltr';
-    // Set HTML lang attribute
-    document.documentElement.lang = language;
+    try {
+      // Update localStorage
+      localStorage.setItem('language', language);
+      
+      // Update document direction
+      const newDirection = language === 'ar' || language === 'ur' ? 'rtl' : 'ltr';
+      setDirection(newDirection);
+      document.documentElement.dir = newDirection;
+      
+      // Update document language
+      document.documentElement.lang = language;
+      
+      // Update HTML elements with dir attribute
+      document.querySelectorAll('[data-dir]').forEach(el => {
+        el.dir = newDirection;
+      });
+      
+      // Update all text content
+      const elements = document.querySelectorAll('[data-translate]');
+      elements.forEach(el => {
+        const key = el.getAttribute('data-translate');
+        if (key) {
+          el.textContent = translate(key);
+        }
+      });
+    } catch (error) {
+      console.error('Error updating language:', error);
+    }
   }, [language]);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, translate, direction }}>
+    <LanguageContext.Provider value={{ 
+      language, 
+      setLanguage, 
+      translate, 
+      direction,
+      languages: Object.keys(translations)
+    }}>
       {children}
     </LanguageContext.Provider>
   );

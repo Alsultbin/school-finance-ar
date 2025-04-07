@@ -68,8 +68,31 @@ const Students = () => {
     }
   };
 
-  const handleImportSuccess = () => {
-    fetchStudents();
+  const handleImportSuccess = async (importResult) => {
+    try {
+      // Add imported students to existing students
+      const newStudents = [...students, ...importResult.data];
+      setStudents(newStudents);
+      
+      // Update the backend with new students
+      const response = await fetch(`${API_URL}/api/students/bulk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(importResult.data)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save students to server');
+      }
+    } catch (error) {
+      console.error('Error saving imported students:', error);
+      setNotification({
+        type: 'error',
+        message: translate('failed_to_save_students')
+      });
+    }
   };
   
   const toggleStudentSelection = (student) => {
