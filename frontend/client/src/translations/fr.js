@@ -80,7 +80,7 @@ const translations = {
   'add_user': 'Ajouter un Utilisateur',
   'role': 'Rôle',
   'admin': 'Administrateur',
-  'staff': 'Personnel',
+  'staff_role': 'Personnel',
   'save_changes': 'Enregistrer les Modifications',
   
   // Bulk actions

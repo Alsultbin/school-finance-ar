@@ -3,7 +3,7 @@ const translations = {
   // Navigation
   'dashboard': 'ڈیش بورڈ',
   'students': 'طلباء',
-  'staff': 'عملہ',
+  'staff_management': 'عملہ',
   'fees': 'فیس',
   'reports': 'رپورٹس',
   'settings': 'ترتیبات',
