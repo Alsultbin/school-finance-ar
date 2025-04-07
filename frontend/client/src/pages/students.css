@@ -1,0 +1,69 @@
+/* Students Page Styles */
+.page-container {
+  padding: 24px;
+  background-color: var(--background-color);
+}
+
+.students-header {
+  margin-bottom: 24px;
+}
+
+.students-table {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Import/Export Container */
+.import-export-container {
+  margin-bottom: 24px;
+}
+
+.import-modal-content {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* RTL Support */
+[dir="rtl"] .page-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .students-header {
+  text-align: right;
+}
+
+[dir="rtl"] .import-export-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .export-buttons {
+  justify-content: flex-end;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+  
+  .students-header {
+    margin-bottom: 16px;
+  }
+  
+  .students-table {
+    padding: 16px;
+  }
+  
+  .export-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
