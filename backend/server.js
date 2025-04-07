@@ -7,13 +7,12 @@ const bcrypt = require('bcryptjs');
 const fileUpload = require('express-fileupload');
 const twilio = require('twilio');
 const path = require('path');
-const { Vonage } = require('@vonage/server-sdk');
 
 const app = express();
 
 // Middleware
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: 'http://localhost:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -38,22 +37,22 @@ const Fee = require('./models/Fee');
 const Payment = require('./models/Payment');
 const Notification = require('./models/Notification');
 
-// Twilio configuration
-const twilioClient = twilio(
-    process.env.TWILIO_ACCOUNT_SID,
-    process.env.TWILIO_AUTH_TOKEN
-);
+// Authentication middleware
+const auth = async (req, res, next) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) throw new Error('No token provided');
 
-// Vonage (WhatsApp) configuration
-const vonage = new Vonage({
-    apiKey: process.env.VONAGE_API_KEY,
-    apiSecret: process.env.VONAGE_API_SECRET
-});
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+        if (!user) throw new Error('User not found');
 
-// Remove authentication middleware
-app.use((req, res, next) => {
-    next();
-});
+        req.user = user;
+        next();
+    } catch (error) {
+        res.status(401).json({ error: 'Please authenticate' });
+    }
+};
 
 // Routes
 app.post('/api/auth/login', async (req, res) => {
@@ -105,7 +104,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Student routes
-app.get('/api/students', async (req, res) => {
+app.get('/api/students', auth, async (req, res) => {
     try {
         const students = await Student.find().populate('class');
         res.json(students);
@@ -114,7 +113,7 @@ app.get('/api/students', async (req, res) => {
     }
 });
 
-app.post('/api/students', async (req, res) => {
+app.post('/api/students', auth, async (req, res) => {
     try {
         const student = new Student(req.body);
         await student.save();
@@ -125,7 +124,7 @@ app.post('/api/students', async (req, res) => {
 });
 
 // Fee routes
-app.get('/api/fees', async (req, res) => {
+app.get('/api/fees', auth, async (req, res) => {
     try {
         const fees = await Fee.find().populate('student');
         res.json(fees);
@@ -134,7 +133,7 @@ app.get('/api/fees', async (req, res) => {
     }
 });
 
-app.post('/api/fees', async (req, res) => {
+app.post('/api/fees', auth, async (req, res) => {
     try {
         const fee = new Fee(req.body);
         await fee.save();
@@ -145,7 +144,7 @@ app.post('/api/fees', async (req, res) => {
 });
 
 // Payment routes
-app.post('/api/payments', async (req, res) => {
+app.post('/api/payments', auth, async (req, res) => {
     try {
         const payment = new Payment(req.body);
         await payment.save();
@@ -164,24 +163,27 @@ app.post('/api/payments', async (req, res) => {
 });
 
 // Notification routes
-app.post('/api/notifications/send', async (req, res) => {
+app.post('/api/notifications/send', auth, async (req, res) => {
     try {
         const { type, recipients, message } = req.body;
+        
+        // Initialize Twilio client
+        const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
         
         // Send notifications
         const results = await Promise.all(recipients.map(async (recipient) => {
             try {
                 if (type === 'whatsapp') {
-                    await vonage.messages.send({
-                        from: process.env.VONAGE_WHATSAPP_NUMBER,
-                        to: recipient,
-                        text: message
+                    await client.messages.create({
+                        body: message,
+                        from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
+                        to: `whatsapp:${recipient}`
                     });
                 } else if (type === 'sms') {
-                    await twilioClient.messages.create({
+                    await client.messages.create({
                         body: message,
-                        to: recipient,
-                        from: process.env.TWILIO_PHONE_NUMBER
+                        from: process.env.TWILIO_PHONE_NUMBER,
+                        to: recipient
                     });
                 }
                 
@@ -203,67 +205,6 @@ app.post('/api/notifications/send', async (req, res) => {
         res.json({ success: true, results });
     } catch (error) {
         res.status(500).json({ error: error.message });
-    }
-});
-
-// Routes for sending SMS and WhatsApp messages
-app.post('/api/send-sms', async (req, res) => {
-    try {
-        const { to, message } = req.body;
-        const result = await twilioClient.messages.create({
-            body: message,
-            to: to,
-            from: process.env.TWILIO_PHONE_NUMBER
-        });
-        res.json({ success: true, message: 'SMS sent successfully', sid: result.sid });
-    } catch (error) {
-        console.error('SMS sending error:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/send-whatsapp', async (req, res) => {
-    try {
-        const { to, message } = req.body;
-        const result = await vonage.messages.send({
-            from: process.env.VONAGE_WHATSAPP_NUMBER,
-            to: to,
-            text: message
-        });
-        res.json({ success: true, message: 'WhatsApp message sent successfully', result });
-    } catch (error) {
-        console.error('WhatsApp sending error:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/send-bulk-messages', async (req, res) => {
-    try {
-        const { recipients, message, type } = req.body;
-        const results = [];
-        
-        for (const recipient of recipients) {
-            if (type === 'sms') {
-                const result = await twilioClient.messages.create({
-                    body: message,
-                    to: recipient,
-                    from: process.env.TWILIO_PHONE_NUMBER
-                });
-                results.push({ recipient, success: true, sid: result.sid });
-            } else if (type === 'whatsapp') {
-                const result = await vonage.messages.send({
-                    from: process.env.VONAGE_WHATSAPP_NUMBER,
-                    to: recipient,
-                    text: message
-                });
-                results.push({ recipient, success: true, result });
-            }
-        }
-        
-        res.json({ success: true, results });
-    } catch (error) {
-        console.error('Bulk message sending error:', error);
-        res.status(500).json({ success: false, error: error.message });
     }
 });
 

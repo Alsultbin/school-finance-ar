@@ -9,6 +9,20 @@
     @apply bg-gray-50 text-gray-900;
     font-family: 'Cairo', sans-serif;
   }
+  
+  /* RTL Support */
+  [dir="rtl"] {
+    text-align: right;
+  }
+  
+  [dir="ltr"] {
+    text-align: left;
+  }
+  
+  .ltr-text {
+    direction: ltr !important;
+    display: inline-block;
+  }
 }
 
 @layer components {
@@ -41,7 +55,15 @@
   }
   
   .table th {
-    @apply px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider;
+    @apply px-6 py-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider;
+  }
+  
+  [dir="rtl"] .table th {
+    text-align: right;
+  }
+  
+  [dir="ltr"] .table th {
+    text-align: left;
   }
   
   .table td {
@@ -51,4 +73,4 @@
   .table tr {
     @apply hover:bg-gray-50;
   }
-} 
+}
