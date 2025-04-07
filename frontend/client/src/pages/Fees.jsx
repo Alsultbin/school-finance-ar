@@ -1,10 +1,13 @@
 import React, { useState, useContext } from 'react';
 import Layout from '../components/layout/Layout';
 import { LanguageContext } from '../contexts/LanguageContext';
+import { message } from 'antd';
+import { FaMoneyBillWave, FaChartPie, FaCalendarAlt, FaBell } from 'react-icons/fa';
+import mockDataHandler from '../utils/mockDataHandler';
+import { API_URL } from '../config';
 import FinanceDashboard from '../components/finance/FinanceDashboard';
 import InstallmentPlan from '../components/finance/InstallmentPlan';
 import FeeNotice from '../components/finance/FeeNotice';
-import { FaMoneyBillWave, FaChartPie, FaCalendarAlt, FaBell } from 'react-icons/fa';
 
 const Fees = () => {
   const { translate, direction } = useContext(LanguageContext);
@@ -77,7 +80,7 @@ const Fees = () => {
       }));
       
       // Use mockDataHandler for export
-      await exportStudents(exportFormat, exportData);
+      await mockDataHandler.exportToExcel(exportData);
       
       message.success(translate('export_successful'));
     } catch (error) {
