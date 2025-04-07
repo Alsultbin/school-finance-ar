@@ -3,17 +3,17 @@ import { LanguageContext } from '../contexts/LanguageContext';
 import Layout from '../components/layout/Layout';
 import ImportExport from '../components/students/ImportExport';
 import BulkActions from '../components/students/BulkActions';
-import { Table, message } from 'antd';
+import AddStudentForm from '../components/students/AddStudentForm';
+import { Table, message, Modal, Button, Space, notification } from 'antd';
 import '../styles/students.css';
 
 const Students = () => {
-  const { translate, direction } = useContext(LanguageContext);
+  const { translate } = useContext(LanguageContext);
   const [students, setStudents] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [notification, setNotification] = useState({ type: '', message: '' });
   const [selectedStudents, setSelectedStudents] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
+  const [showAddStudent, setShowAddStudent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -23,85 +23,146 @@ const Students = () => {
 
   const fetchStudents = async () => {
     try {
+      setLoading(true);
       const response = await fetch(`${API_URL}/api/students`);
-      if (response.ok) {
-        const data = await response.json();
-        setStudents(data);
-        setSelectedStudents([]);
-        setSelectAll(false);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch students');
       }
+
+      const data = await response.json();
+      setStudents(data);
+      setSelectedStudents([]);
+      message.success(translate('students_loaded_successfully'));
     } catch (error) {
       console.error('Error fetching students:', error);
-      message.error(translate('error_fetching_students'));
+      setError(error.message);
+      message.error(error.message || translate('error_fetching_students'));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSendNotification = async (student) => {
+  const handleAddStudent = async (student) => {
     try {
-      const response = await fetch(`${API_URL}/api/notifications/send`, {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/students`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          type: 'whatsapp',
-          recipients: [student.phone],
-          message: `${translate('dear')} ${student.name}, ${translate('fee_payment_reminder_message')}`
-        })
+        body: JSON.stringify(student)
       });
 
-      if (response.ok) {
-        message.success(translate('notification_sent_success'));
-      } else {
-        throw new Error(translate('failed_to_send_notification'));
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to add student');
       }
+
+      const newStudent = await response.json();
+      setStudents(prev => [newStudent, ...prev]);
+      notification.success({
+        message: translate('success'),
+        description: translate('student_added_successfully'),
+        duration: 3
+      });
     } catch (error) {
-      message.error(error.message);
+      console.error('Error adding student:', error);
+      notification.error({
+        message: translate('error'),
+        description: error.message || translate('failed_to_add_student'),
+        duration: 3
+      });
+    } finally {
+      setLoading(false);
+      setShowAddStudent(false);
     }
   };
 
   const handleImportSuccess = async (importResult) => {
     try {
-      // Add imported students to existing students
-      const newStudents = [...students, ...importResult.data];
-      setStudents(newStudents);
-      
-      // Update the backend with new students
+      setLoading(true);
       const response = await fetch(`${API_URL}/api/students/bulk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(importResult.data)
+        body: JSON.stringify(importResult)
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save students to server');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to import students');
       }
-      
-      message.success(translate('students_imported_successfully'));
+
+      const result = await response.json();
+      if (result.invalidStudents && result.invalidStudents.length > 0) {
+        notification.warning({
+          message: translate('warning'),
+          description: `${result.invalidStudents.length} ${translate('students_have_errors')}`,
+          duration: 5
+        });
+      }
+
+      setStudents(prev => [...prev, ...result.data]);
+      notification.success({
+        message: translate('success'),
+        description: `${result.data.length} ${translate('students_imported_successfully')}`,
+        duration: 3
+      });
     } catch (error) {
-      console.error('Error saving imported students:', error);
-      message.error(translate('failed_to_save_students'));
+      console.error('Error importing students:', error);
+      notification.error({
+        message: translate('error'),
+        description: error.message || translate('failed_to_import_students'),
+        duration: 3
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const toggleStudentSelection = (student) => {
-    setSelectedStudents(prev => {
-      const isSelected = prev.some(s => s._id === student._id);
-      if (isSelected) {
-        return prev.filter(s => s._id !== student._id);
-      }
-      return [...prev, student];
-    });
-  };
+  const handleGenerateReport = async (type) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/reports/${type}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          students: selectedStudents,
+          type: type
+        })
+      });
 
-  const handleSelectAll = (selected) => {
-    setSelectAll(selected);
-    if (selected) {
-      setSelectedStudents(students);
-    } else {
-      setSelectedStudents([]);
+      if (!response.ok) {
+        throw new Error('Failed to generate report');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `students_report.${type === 'pdf' ? 'pdf' : 'xlsx'}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      notification.success({
+        message: translate('success'),
+        description: translate('report_generated_successfully'),
+        duration: 3
+      });
+    } catch (error) {
+      console.error('Error generating report:', error);
+      notification.error({
+        message: translate('error'),
+        description: error.message || translate('failed_to_generate_report'),
+        duration: 3
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -132,6 +193,11 @@ const Students = () => {
       key: 'admissionNumber'
     },
     {
+      title: translate('gender'),
+      dataIndex: 'gender',
+      key: 'gender'
+    },
+    {
       title: translate('parent'),
       dataIndex: 'parent',
       key: 'parent'
@@ -142,27 +208,27 @@ const Students = () => {
       key: 'contact'
     },
     {
+      title: translate('email'),
+      dataIndex: 'email',
+      key: 'email'
+    },
+    {
+      title: translate('address'),
+      dataIndex: 'address',
+      key: 'address'
+    },
+    {
       title: translate('fees_status'),
       dataIndex: 'fees',
       key: 'fees',
       render: (fees) => (
-        <span style={{ color: fees === 'Paid' ? '#52c41a' : '#faad14' }}>
+        <span style={{ 
+          color: fees === 'Paid' ? '#52c41a' : 
+                 fees === 'Partial' ? '#faad14' : 
+                 '#ff4d4f'
+        }}>
           {fees}
         </span>
-      )
-    },
-    {
-      title: translate('actions'),
-      key: 'actions',
-      render: (_, record) => (
-        <div>
-          <button
-            onClick={() => handleSendNotification(record)}
-            className="action-btn"
-          >
-            {translate('send_reminder')}
-          </button>
-        </div>
       )
     }
   ];
@@ -173,11 +239,16 @@ const Students = () => {
         <h1>{translate('students')}</h1>
         
         <div className="students-header">
-          <ImportExport onImportSuccess={handleImportSuccess} />
-          <BulkActions
-            selectedStudents={selectedStudents}
-            onSendNotifications={handleSendNotification}
-          />
+          <Space>
+            <Button type="primary" onClick={() => setShowAddStudent(true)}>
+              {translate('add_student')}
+            </Button>
+            <ImportExport onImportSuccess={handleImportSuccess} />
+            <BulkActions
+              selectedStudents={selectedStudents}
+              onGenerateReport={handleGenerateReport}
+            />
+          </Space>
         </div>
 
         <div className="students-table">
@@ -188,14 +259,25 @@ const Students = () => {
               selectedRowKeys: selectedStudents.map(s => s._id),
               onChange: (selectedRowKeys) => {
                 setSelectedStudents(students.filter(s => selectedRowKeys.includes(s._id)));
-              },
-              onSelectAll: handleSelectAll
+              }
             }}
             pagination={{
               pageSize: 10
             }}
+            loading={loading}
           />
         </div>
+
+        {showAddStudent && (
+          <Modal
+            title={translate('add_student')}
+            visible={showAddStudent}
+            onCancel={() => setShowAddStudent(false)}
+            footer={null}
+          >
+            <AddStudentForm onAdd={handleAddStudent} onClose={() => setShowAddStudent(false)} />
+          </Modal>
+        )}
       </div>
     </Layout>
   );

@@ -1,126 +1,303 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { LanguageContext } from '../contexts/LanguageContext';
 import Layout from '../components/layout/Layout';
+import { Table, message, Modal, Button, Space, notification, Form, Input, Select } from 'antd';
+import '../styles/staff.css';
 
 const Staff = () => {
-  // Mock data for staff - in a real app this would come from an API
-  const [staffList] = useState([
-    { id: 1, name: 'Ahmad Ali', position: 'Science Teacher', department: 'Education', salary: 2500, joinDate: '01/03/2022' },
-    { id: 2, name: 'Sara Mahmoud', position: 'Math Teacher', department: 'Education', salary: 2300, joinDate: '15/08/2021' },
-    { id: 3, name: 'Mohammed Khalid', position: 'Administrator', department: 'Admin', salary: 1800, joinDate: '10/05/2023' },
-    { id: 4, name: 'Layla Ibrahim', position: 'Receptionist', department: 'Admin', salary: 1500, joinDate: '22/01/2024' },
-  ]);
+  const { translate } = useContext(LanguageContext);
+  const [staff, setStaff] = useState([]);
+  const [selectedStaff, setSelectedStaff] = useState([]);
+  const [showAddStaff, setShowAddStaff] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [form] = Form.useForm();
 
-  const [showModal, setShowModal] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState(null);
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+  useEffect(() => {
+    fetchStaff();
+  }, []); // Empty dependency array means this runs only once on mount
+
+  const fetchStaff = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/staff`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch staff');
+      }
+
+      const data = await response.json();
+      setStaff(data);
+      setSelectedStaff([]);
+      message.success(translate('staff_loaded_successfully'));
+    } catch (error) {
+      console.error('Error fetching staff:', error);
+      setError(error.message);
+      message.error(error.message || translate('error_fetching_staff'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddStaff = async (values) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/staff`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(values)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to add staff');
+      }
+
+      const newStaff = await response.json();
+      setStaff(prev => [newStaff, ...prev]);
+      notification.success({
+        message: translate('success'),
+        description: translate('staff_added_successfully'),
+        duration: 3
+      });
+    } catch (error) {
+      console.error('Error adding staff:', error);
+      notification.error({
+        message: translate('error'),
+        description: error.message || translate('failed_to_add_staff'),
+        duration: 3
+      });
+    } finally {
+      setLoading(false);
+      setShowAddStaff(false);
+      form.resetFields();
+    }
+  };
+
+  const columns = [
+    {
+      title: translate('name'),
+      dataIndex: 'name',
+      key: 'name'
+    },
+    {
+      title: translate('employee_number'),
+      dataIndex: 'employeeNumber',
+      key: 'employeeNumber'
+    },
+    {
+      title: translate('department'),
+      dataIndex: 'department',
+      key: 'department'
+    },
+    {
+      title: translate('position'),
+      dataIndex: 'position',
+      key: 'position'
+    },
+    {
+      title: translate('gender'),
+      dataIndex: 'gender',
+      key: 'gender'
+    },
+    {
+      title: translate('contact'),
+      dataIndex: 'contact',
+      key: 'contact'
+    },
+    {
+      title: translate('email'),
+      dataIndex: 'email',
+      key: 'email'
+    },
+    {
+      title: translate('address'),
+      dataIndex: 'address',
+      key: 'address'
+    },
+    {
+      title: translate('salary'),
+      dataIndex: 'salary',
+      key: 'salary',
+      render: (salary) => `${salary} AED`
+    },
+    {
+      title: translate('status'),
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => (
+        <span style={{ 
+          color: status === 'Active' ? '#52c41a' : 
+                 status === 'On Leave' ? '#faad14' : 
+                 '#ff4d4f'
+        }}>
+          {status}
+        </span>
+      )
+    }
+  ];
 
   return (
     <Layout>
-      <div className="flex justify-between mb-6">
-        <h2 className="text-2xl font-bold">Staff Management</h2>
-        <button 
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Add New Staff
-        </button>
-      </div>
-
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Position
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Department
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Salary
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Join Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {staffList.map((staff) => (
-              <tr key={staff.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{staff.name}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{staff.position}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{staff.department}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">${staff.salary}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{staff.joinDate}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => {
-                      setSelectedStaff(staff);
-                      setShowModal(true);
-                    }}
-                    className="text-indigo-600 hover:text-indigo-900 mr-4"
-                  >
-                    View Details
-                  </button>
-                  <button
-                    className="text-green-600 hover:text-green-900 mr-4"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Generate Payslip
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {showModal && selectedStaff && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3 text-center">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Staff Details
-              </h3>
-              <div className="mt-2 px-7 py-3">
-                <div className="text-left">
-                  <p className="mb-2"><span className="font-semibold">Name:</span> {selectedStaff.name}</p>
-                  <p className="mb-2"><span className="font-semibold">Position:</span> {selectedStaff.position}</p>
-                  <p className="mb-2"><span className="font-semibold">Department:</span> {selectedStaff.department}</p>
-                  <p className="mb-2"><span className="font-semibold">Salary:</span> ${selectedStaff.salary}</p>
-                  <p className="mb-2"><span className="font-semibold">Join Date:</span> {selectedStaff.joinDate}</p>
-                </div>
-              </div>
-              <div className="items-center px-4 py-3">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
+      <div className="page-container">
+        <h1>{translate('staff')}</h1>
+        
+        <div className="staff-header">
+          <Space>
+            <Button type="primary" onClick={() => setShowAddStaff(true)}>
+              {translate('add_staff')}
+            </Button>
+          </Space>
         </div>
-      )}
+
+        <div className="staff-table">
+          <Table
+            columns={columns}
+            dataSource={staff}
+            rowSelection={{
+              selectedRowKeys: selectedStaff.map(s => s._id),
+              onChange: (selectedRowKeys) => {
+                setSelectedStaff(staff.filter(s => selectedRowKeys.includes(s._id)));
+              }
+            }}
+            pagination={{
+              pageSize: 10
+            }}
+            loading={loading}
+          />
+        </div>
+
+        {showAddStaff && (
+          <Modal
+            title={translate('add_staff')}
+            visible={showAddStaff}
+            onCancel={() => {
+              setShowAddStaff(false);
+              form.resetFields();
+            }}
+            footer={null}
+          >
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleAddStaff}
+            >
+              <Form.Item
+                name="name"
+                label={translate('name')}
+                rules={[{ required: true, message: translate('please_enter_name') }]}
+              >
+                <Input placeholder={translate('enter_name')} />
+              </Form.Item>
+
+              <Form.Item
+                name="employeeNumber"
+                label={translate('employee_number')}
+                rules={[{ required: true, message: translate('please_enter_employee_number') }]}
+              >
+                <Input placeholder={translate('enter_employee_number')} />
+              </Form.Item>
+
+              <Form.Item
+                name="department"
+                label={translate('department')}
+                rules={[{ required: true, message: translate('please_select_department') }]}
+              >
+                <Select placeholder={translate('select_department')}>
+                  <Select.Option value="Teaching">{translate('teaching')}</Select.Option>
+                  <Select.Option value="Admin">{translate('admin')}</Select.Option>
+                  <Select.Option value="Support">{translate('support')}</Select.Option>
+                  <Select.Option value="Management">{translate('management')}</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                name="position"
+                label={translate('position')}
+                rules={[{ required: true, message: translate('please_enter_position') }]}
+              >
+                <Input placeholder={translate('enter_position')} />
+              </Form.Item>
+
+              <Form.Item
+                name="gender"
+                label={translate('gender')}
+                rules={[{ required: true, message: translate('please_select_gender') }]}
+              >
+                <Select placeholder={translate('select_gender')}>
+                  <Select.Option value="Male">{translate('male')}</Select.Option>
+                  <Select.Option value="Female">{translate('female')}</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                name="contact"
+                label={translate('contact')}
+                rules={[{ required: true, message: translate('please_enter_contact') }]}
+              >
+                <Input placeholder={translate('enter_contact')} />
+              </Form.Item>
+
+              <Form.Item
+                name="email"
+                label={translate('email')}
+                rules={[
+                  { required: true, message: translate('please_enter_email') },
+                  { type: 'email', message: translate('invalid_email') }
+                ]}
+              >
+                <Input placeholder={translate('enter_email')} />
+              </Form.Item>
+
+              <Form.Item
+                name="address"
+                label={translate('address')}
+                rules={[{ required: true, message: translate('please_enter_address') }]}
+              >
+                <Input.TextArea placeholder={translate('enter_address')} />
+              </Form.Item>
+
+              <Form.Item
+                name="salary"
+                label={translate('salary')}
+                rules={[{ required: true, message: translate('please_enter_salary') }]}
+              >
+                <Input placeholder={translate('enter_salary')} type="number" />
+              </Form.Item>
+
+              <Form.Item
+                name="status"
+                label={translate('status')}
+                rules={[{ required: true, message: translate('please_select_status') }]}
+              >
+                <Select placeholder={translate('select_status')}>
+                  <Select.Option value="Active">{translate('active')}</Select.Option>
+                  <Select.Option value="Inactive">{translate('inactive')}</Select.Option>
+                  <Select.Option value="On Leave">{translate('on_leave')}</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item>
+                <Space>
+                  <Button type="primary" htmlType="submit" loading={loading}>
+                    {translate('add_staff')}
+                  </Button>
+                  <Button onClick={() => {
+                    setShowAddStaff(false);
+                    form.resetFields();
+                  }}>
+                    {translate('cancel')}
+                  </Button>
+                </Space>
+              </Form.Item>
+            </Form>
+          </Modal>
+        )}
+      </div>
     </Layout>
   );
 };

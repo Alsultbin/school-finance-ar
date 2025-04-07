@@ -6,113 +6,51 @@ import 'jspdf-autotable';
 
 // Sample student data
 const sampleStudents = [
-  { id: 1, name: 'Ahmed Ali', grade: '10th', section: 'A', admissionNumber: 'A001', gender: 'Male', parent: 'Mohammed Ali', contact: '+971 50 123 4567', fees: 'Paid' },
-  { id: 2, name: 'Fatima Hassan', grade: '9th', section: 'B', admissionNumber: 'B002', gender: 'Female', parent: 'Hassan Khan', contact: '+971 55 234 5678', fees: 'Pending' },
-  { id: 3, name: 'Omar Farooq', grade: '11th', section: 'A', admissionNumber: 'C003', gender: 'Male', parent: 'Farooq Ahmed', contact: '+971 52 345 6789', fees: 'Paid' },
-  { id: 4, name: 'Aisha Rahman', grade: '10th', section: 'C', admissionNumber: 'D004', gender: 'Female', parent: 'Rahman Shah', contact: '+971 54 456 7890', fees: 'Partial' },
-  { id: 5, name: 'Yousuf Khan', grade: '8th', section: 'B', admissionNumber: 'E005', gender: 'Male', parent: 'Khan Abdul', contact: '+971 56 567 8901', fees: 'Paid' },
-];
-
-// Mock students for use in the fee notices and other components
-export const mockStudents = [
-  { id: 1, name: 'Ahmed Ali', grade: '10', section: 'A', parentPhone: '+971 50 123 4567', parentEmail: 'mohammed.ali@example.com' },
-  { id: 2, name: 'Fatima Hassan', grade: '9', section: 'B', parentPhone: '+971 55 234 5678', parentEmail: 'hassan.khan@example.com' },
-  { id: 3, name: 'Omar Farooq', grade: '11', section: 'A', parentPhone: '+971 52 345 6789', parentEmail: 'farooq.ahmed@example.com' },
-  { id: 4, name: 'Aisha Rahman', grade: '10', section: 'C', parentPhone: '+971 54 456 7890', parentEmail: 'rahman.shah@example.com' },
-  { id: 5, name: 'Yousuf Khan', grade: '8', section: 'B', parentPhone: '+971 56 567 8901', parentEmail: 'khan.abdul@example.com' },
-  { id: 6, name: 'Sara Mohammad', grade: '7', section: 'A', parentPhone: '+971 58 678 9012', parentEmail: 'mohammad.ali@example.com' },
-  { id: 7, name: 'Hamza Kareem', grade: '12', section: 'B', parentPhone: '+971 50 789 0123', parentEmail: 'kareem.ahmed@example.com' },
-  { id: 8, name: 'Layla Saeed', grade: '11', section: 'C', parentPhone: '+971 55 890 1234', parentEmail: 'saeed.ibrahim@example.com' },
-  { id: 9, name: 'Mustafa Hakim', grade: '9', section: 'A', parentPhone: '+971 52 901 2345', parentEmail: 'hakim.mustafa@example.com' },
-  { id: 10, name: 'Noura Qasim', grade: '10', section: 'B', parentPhone: '+971 54 012 3456', parentEmail: 'qasim.ahmed@example.com' },
-  { id: 11, name: 'Tariq Anwar', grade: '8', section: 'C', parentPhone: '+971 56 123 4567', parentEmail: 'anwar.tariq@example.com' },
-  { id: 12, name: 'Zainab Khalid', grade: '7', section: 'A', parentPhone: '+971 58 234 5678', parentEmail: 'khalid.zain@example.com' }
-];
-
-// Mock installment plans
-export const mockInstallmentPlans = [
-  {
-    id: 1,
-    studentId: '001',
-    studentName: 'Ahmed Ali',
-    feeType: 'Tuition Fee',
-    totalAmount: '12000',
-    currency: 'AED',
-    createdDate: '2023-09-01T10:00:00Z',
-    status: 'active',
-    notes: 'First installment due on registration',
-    installments: [
-      { installmentNumber: 1, amount: 4000, dueDate: '2023-09-01', status: 'paid' },
-      { installmentNumber: 2, amount: 4000, dueDate: '2023-12-01', status: 'pending' },
-      { installmentNumber: 3, amount: 4000, dueDate: '2024-03-01', status: 'pending' }
-    ]
+  { 
+    _id: '1', 
+    name: 'Ahmed Ali', 
+    grade: '10', 
+    section: 'A', 
+    admissionNumber: 'A001', 
+    gender: 'Male', 
+    parent: 'Mohammed Ali', 
+    contact: '+971 50 123 4567', 
+    fees: 'Paid',
+    email: 'mohammed.ali@example.com',
+    address: 'Dubai, UAE'
   },
-  {
-    id: 2,
-    studentId: '002',
-    studentName: 'Fatima Hassan',
-    feeType: 'Bus Fee',
-    totalAmount: '4500',
-    currency: 'AED',
-    createdDate: '2023-08-15T14:30:00Z',
-    status: 'active',
-    notes: 'Bus route: Downtown',
-    installments: [
-      { installmentNumber: 1, amount: 1500, dueDate: '2023-09-01', status: 'paid' },
-      { installmentNumber: 2, amount: 1500, dueDate: '2023-12-01', status: 'paid' },
-      { installmentNumber: 3, amount: 1500, dueDate: '2024-03-01', status: 'pending' }
-    ]
-  },
-  {
-    id: 3,
-    studentId: '003',
-    studentName: 'Omar Farooq',
-    feeType: 'Activity Fee',
-    totalAmount: '2000',
-    currency: 'AED',
-    createdDate: '2023-09-05T09:15:00Z',
-    status: 'active',
-    notes: 'Football and chess club activities',
-    installments: [
-      { installmentNumber: 1, amount: 1000, dueDate: '2023-09-10', status: 'paid' },
-      { installmentNumber: 2, amount: 1000, dueDate: '2024-01-10', status: 'pending' }
-    ]
-  },
-  {
-    id: 4,
-    studentId: '004',
-    studentName: 'Aisha Rahman',
-    feeType: 'Tuition Fee',
-    totalAmount: '15000',
-    currency: 'AED',
-    createdDate: '2023-08-20T11:45:00Z',
-    status: 'active',
-    notes: 'Scholarship recipient - 10% discount applied',
-    installments: [
-      { installmentNumber: 1, amount: 5000, dueDate: '2023-09-01', status: 'paid' },
-      { installmentNumber: 2, amount: 5000, dueDate: '2023-12-01', status: 'paid' },
-      { installmentNumber: 3, amount: 5000, dueDate: '2024-03-01', status: 'pending' }
-    ]
+  { 
+    _id: '2', 
+    name: 'Fatima Hassan', 
+    grade: '9', 
+    section: 'B', 
+    admissionNumber: 'B002', 
+    gender: 'Female', 
+    parent: 'Hassan Khan', 
+    contact: '+971 55 234 5678', 
+    fees: 'Pending',
+    email: 'hassan.khan@example.com',
+    address: 'Abu Dhabi, UAE'
   }
 ];
 
-// Mock financial data for dashboard
-export const mockFinancialData = {
-  totalCollected: 267500,
-  totalPending: 150000,
-  totalStudents: 120,
-  totalStaff: 25,
-  recentTransactions: [
-    { id: 1, student: 'Ahmed Ali', type: 'Tuition', amount: 5000, date: '2023-09-01', status: 'paid' },
-    { id: 2, student: 'Fatima Hassan', type: 'Bus Fee', amount: 1500, date: '2023-09-01', status: 'paid' },
-    { id: 3, student: 'Omar Farooq', type: 'Activity Fee', amount: 1000, date: '2023-09-10', status: 'paid' },
-    { id: 4, student: 'Aisha Rahman', type: 'Tuition', amount: 5000, date: '2023-09-01', status: 'paid' }
-  ]
+// Flexible column mapping for imports
+const defaultColumns = {
+  name: ['name', 'student name', 'student_name'],
+  grade: ['grade', 'class', 'student_grade'],
+  section: ['section', 'student_section'],
+  admissionNumber: ['admission number', 'student_id', 'id', 'admission_number'],
+  gender: ['gender', 'sex'],
+  parent: ['parent', 'parent_name', 'guardian'],
+  contact: ['contact', 'phone', 'parent_phone', 'contact_number'],
+  email: ['email', 'parent_email'],
+  address: ['address', 'parent_address'],
+  fees: ['fees', 'fee_status', 'payment_status']
 };
 
 // Export functions
 const exportToCSV = (students = sampleStudents) => {
-  const headers = ['Name', 'Grade', 'Section', 'Admission Number', 'Gender', 'Parent Name', 'Contact', 'Fees Status'];
+  const headers = ['ID', 'Name', 'Grade', 'Section', 'Admission Number', 'Gender', 'Parent Name', 'Contact', 'Email', 'Address', 'Fees Status'];
   const csvRows = [headers.join(',')];
   
   students.forEach(student => {
@@ -123,6 +61,7 @@ const exportToCSV = (students = sampleStudents) => {
   const csvString = csvRows.join('\n');
   const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8' });
   saveAs(blob, 'students_export.csv');
+  return { success: true, message: 'Export successful' };
 };
 
 const exportToExcel = (students = sampleStudents) => {
@@ -130,13 +69,15 @@ const exportToExcel = (students = sampleStudents) => {
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
   XLSX.writeFile(workbook, 'students_export.xlsx');
+  return { success: true, message: 'Export successful' };
 };
 
 const exportToPDF = (students = sampleStudents) => {
   const doc = new jsPDF();
   doc.autoTable({
-    head: [['Name', 'Grade', 'Section', 'Admission Number', 'Gender', 'Parent Name', 'Contact', 'Fees Status']],
+    head: [['ID', 'Name', 'Grade', 'Section', 'Admission Number', 'Gender', 'Parent Name', 'Contact', 'Email', 'Address', 'Fees Status']],
     body: students.map(student => [
+      student._id,
       student.name,
       student.grade,
       student.section,
@@ -144,10 +85,13 @@ const exportToPDF = (students = sampleStudents) => {
       student.gender,
       student.parent,
       student.contact,
+      student.email,
+      student.address,
       student.fees
     ])
   });
   doc.save('students_export.pdf');
+  return { success: true, message: 'Export successful' };
 };
 
 const getImportTemplate = () => {
@@ -156,6 +100,7 @@ const getImportTemplate = () => {
   const csvString = csvRows.join('\n');
   const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8' });
   saveAs(blob, 'students_import_template.csv');
+  return { success: true, message: 'Template downloaded' };
 };
 
 const parseCSVImport = (file) => {
@@ -164,21 +109,53 @@ const parseCSVImport = (file) => {
     reader.onload = (event) => {
       const content = event.target.result;
       const rows = content.split('\n');
-      const headers = rows[0].split(',');
+      const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+      
+      // Map headers to our standard format
+      const headerMap = {};
+      headers.forEach(header => {
+        Object.entries(defaultColumns).forEach(([key, aliases]) => {
+          if (aliases.some(alias => alias.toLowerCase() === header)) {
+            headerMap[header] = key;
+          }
+        });
+      });
+      
+      // Process student data
       const students = rows.slice(1).map(row => {
-        const values = row.split(',');
-        return headers.reduce((acc, header, index) => {
-          acc[header.trim()] = values[index]?.trim() || '';
-          return acc;
-        }, {});
-      }).filter(student => student.name);
+        const values = row.split(',').map(v => v.trim());
+        const student = {};
+        
+        values.forEach((value, index) => {
+          const header = headers[index];
+          const mappedKey = headerMap[header];
+          if (mappedKey && value) {
+            student[mappedKey] = value;
+          }
+        });
+
+        // Add defaults if missing
+        student._id = (Date.now() + Math.random()).toString();
+        student.fees = student.fees || 'Pending';
+        
+        return student;
+      }).filter(student => student.name); // Only keep students with names
       
       resolve({
+        success: true,
         count: students.length,
-        data: students
+        data: students,
+        message: `Successfully imported ${students.length} students`
       });
     };
-    reader.onerror = (error) => reject({ error: 'Error reading file' });
+    
+    reader.onerror = (error) => {
+      reject({
+        success: false,
+        message: 'Error reading file: ' + error.message
+      });
+    };
+    
     reader.readAsText(file);
   });
 };
@@ -186,37 +163,51 @@ const parseCSVImport = (file) => {
 const parseExcelImport = (file) => {
   return new Promise((resolve, reject) => {
     XLSX.readFile(file, { type: 'binary' }, (err, workbook) => {
-      if (err) return reject({ error: 'Error reading Excel file' });
+      if (err) {
+        return reject({
+          success: false,
+          message: 'Error reading Excel file: ' + err.message
+        });
+      }
       
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const data = XLSX.utils.sheet_to_json(worksheet);
       
+      // Map headers to our standard format
+      const headerMap = {};
+      Object.keys(data[0]).forEach(header => {
+        Object.entries(defaultColumns).forEach(([key, aliases]) => {
+          if (aliases.some(alias => alias.toLowerCase() === header.toLowerCase())) {
+            headerMap[header] = key;
+          }
+        });
+      });
+      
+      // Process student data
+      const students = data.map(row => {
+        const student = {};
+        Object.entries(row).forEach(([key, value]) => {
+          const mappedKey = headerMap[key];
+          if (mappedKey && value) {
+            student[mappedKey] = value;
+          }
+        });
+
+        // Add defaults if missing
+        student._id = (Date.now() + Math.random()).toString();
+        student.fees = student.fees || 'Pending';
+        
+        return student;
+      }).filter(student => student.name); // Only keep students with names
+      
       resolve({
-        count: data.length,
-        data: data
+        success: true,
+        count: students.length,
+        data: students,
+        message: `Successfully imported ${students.length} students`
       });
     });
   });
-};
-
-const importStudents = async (file) => {
-  try {
-    if (!file) {
-      throw new Error('No file selected');
-    }
-
-    const fileType = file.name.split('.').pop().toLowerCase();
-    
-    if (fileType === 'csv') {
-      return await parseCSVImport(file);
-    } else if (['xlsx', 'xls'].includes(fileType)) {
-      return await parseExcelImport(file);
-    } else {
-      throw new Error('Unsupported file format');
-    }
-  } catch (error) {
-    throw error;
-  }
 };
 
 // Export all functions
@@ -226,8 +217,7 @@ export {
   exportToPDF,
   getImportTemplate,
   parseCSVImport,
-  parseExcelImport,
-  importStudents
+  parseExcelImport
 };
 
 // Default export for backward compatibility
@@ -237,8 +227,7 @@ const mockDataHandler = {
   exportToPDF,
   getImportTemplate,
   parseCSVImport,
-  parseExcelImport,
-  importStudents
+  parseExcelImport
 };
 
 export default mockDataHandler;
