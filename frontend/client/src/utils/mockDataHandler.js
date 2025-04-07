@@ -99,64 +99,65 @@ export const mockInstallmentPlans = [
 // Mock financial data for dashboard
 export const mockFinancialData = {
   totalCollected: 267500,
-  totalPending: 124300,
-  totalOverdue: 45200,
-  collectionRate: 78.5,
-  
-  // Monthly collection data for charts
-  monthlyCollection: [
-    { month: 'Jan', collected: 24500, pending: 3500 },
-    { month: 'Feb', collected: 22800, pending: 4200 },
-    { month: 'Mar', collected: 25600, pending: 3100 },
-    { month: 'Apr', collected: 23400, pending: 5600 },
-    { month: 'May', collected: 18700, pending: 8900 },
-    { month: 'Jun', collected: 19500, pending: 7500 },
-    { month: 'Jul', collected: 12300, pending: 15800 },
-    { month: 'Aug', collected: 28600, pending: 9700 },
-    { month: 'Sep', collected: 31400, pending: 6200 },
-    { month: 'Oct', collected: 29800, pending: 7900 },
-    { month: 'Nov', collected: 26700, pending: 12400 },
-    { month: 'Dec', collected: 24200, pending: 15200 }
-  ],
-  
-  // Fee type breakdown
-  feeTypeBreakdown: [
-    { type: 'Tuition', amount: 198000, percentage: 65 },
-    { type: 'Transportation', amount: 45600, percentage: 15 },
-    { type: 'Books & Supplies', amount: 30400, percentage: 10 },
-    { type: 'Activities', amount: 15200, percentage: 5 },
-    { type: 'Uniform', amount: 9100, percentage: 3 },
-    { type: 'Others', amount: 6100, percentage: 2 }
-  ],
-  
-  // Recent transactions
+  totalPending: 150000,
+  totalStudents: 120,
+  totalStaff: 25,
   recentTransactions: [
-    { id: 1, student: 'Ahmed Ali', amount: 4000, type: 'Tuition Fee', date: '2023-10-15', status: 'Paid' },
-    { id: 2, student: 'Fatima Hassan', amount: 1500, type: 'Bus Fee', date: '2023-10-14', status: 'Paid' },
-    { id: 3, student: 'Omar Farooq', amount: 1000, type: 'Activity Fee', date: '2023-10-12', status: 'Paid' },
-    { id: 4, student: 'Aisha Rahman', amount: 5000, type: 'Tuition Fee', date: '2023-10-10', status: 'Paid' },
-    { id: 5, student: 'Yousuf Khan', amount: 2500, type: 'Books Fee', date: '2023-10-08', status: 'Paid' },
-    { id: 6, student: 'Sara Mohammad', amount: 3500, type: 'Tuition Fee', date: '2023-10-05', status: 'Overdue' }
-  ],
-  
-  // Grade-wise fee collection
-  gradeCollection: [
-    { grade: 'Grade 1', collected: 18500, pending: 4500 },
-    { grade: 'Grade 2', collected: 17800, pending: 5200 },
-    { grade: 'Grade 3', collected: 19200, pending: 3800 },
-    { grade: 'Grade 4', collected: 22500, pending: 6500 },
-    { grade: 'Grade 5', collected: 21800, pending: 7200 },
-    { grade: 'Grade 6', collected: 23400, pending: 5600 },
-    { grade: 'Grade 7', collected: 24800, pending: 4200 },
-    { grade: 'Grade 8', collected: 26500, pending: 3500 },
-    { grade: 'Grade 9', collected: 28200, pending: 2800 },
-    { grade: 'Grade 10', collected: 30800, pending: 4200 },
-    { grade: 'Grade 11', collected: 32500, pending: 5500 },
-    { grade: 'Grade 12', collected: 33600, pending: 6400 }
+    { id: 1, student: 'Ahmed Ali', type: 'Tuition', amount: 5000, date: '2023-09-01', status: 'paid' },
+    { id: 2, student: 'Fatima Hassan', type: 'Bus Fee', amount: 1500, date: '2023-09-01', status: 'paid' },
+    { id: 3, student: 'Omar Farooq', type: 'Activity Fee', amount: 1000, date: '2023-09-10', status: 'paid' },
+    { id: 4, student: 'Aisha Rahman', type: 'Tuition', amount: 5000, date: '2023-09-01', status: 'paid' }
   ]
 };
 
-// Parse CSV file
+// Export functions
+const exportToCSV = (students = sampleStudents) => {
+  const headers = ['Name', 'Grade', 'Section', 'Admission Number', 'Gender', 'Parent Name', 'Contact', 'Fees Status'];
+  const csvRows = [headers.join(',')];
+  
+  students.forEach(student => {
+    const values = headers.map(header => student[header.toLowerCase().replace(' ', '_')] || '');
+    csvRows.push(values.join(','));
+  });
+  
+  const csvString = csvRows.join('\n');
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8' });
+  saveAs(blob, 'students_export.csv');
+};
+
+const exportToExcel = (students = sampleStudents) => {
+  const worksheet = XLSX.utils.json_to_sheet(students);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
+  XLSX.writeFile(workbook, 'students_export.xlsx');
+};
+
+const exportToPDF = (students = sampleStudents) => {
+  const doc = new jsPDF();
+  doc.autoTable({
+    head: [['Name', 'Grade', 'Section', 'Admission Number', 'Gender', 'Parent Name', 'Contact', 'Fees Status']],
+    body: students.map(student => [
+      student.name,
+      student.grade,
+      student.section,
+      student.admissionNumber,
+      student.gender,
+      student.parent,
+      student.contact,
+      student.fees
+    ])
+  });
+  doc.save('students_export.pdf');
+};
+
+const getImportTemplate = () => {
+  const headers = ['Name', 'Grade', 'Section', 'Admission Number', 'Gender', 'Parent Name', 'Contact Number', 'Email', 'Address', 'Fees Status'];
+  const csvRows = [headers.join(',')];
+  const csvString = csvRows.join('\n');
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8' });
+  saveAs(blob, 'students_import_template.csv');
+};
+
 const parseCSVImport = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -182,7 +183,6 @@ const parseCSVImport = (file) => {
   });
 };
 
-// Parse Excel file
 const parseExcelImport = (file) => {
   return new Promise((resolve, reject) => {
     XLSX.readFile(file, { type: 'binary' }, (err, workbook) => {
@@ -199,7 +199,6 @@ const parseExcelImport = (file) => {
   });
 };
 
-// Import students
 const importStudents = async (file) => {
   try {
     if (!file) {
@@ -220,119 +219,26 @@ const importStudents = async (file) => {
   }
 };
 
-// Export students to CSV
-export const exportToCSV = (students = sampleStudents) => {
-  const headers = ['Name', 'Grade', 'Section', 'Admission Number', 'Gender', 'Parent', 'Contact', 'Fees'];
-  const csvRows = [];
-  
-  // Add headers
-  csvRows.push(headers.join(','));
-  
-  // Add data rows
-  students.forEach(student => {
-    const values = [
-      student.name,
-      student.grade,
-      student.section,
-      student.admissionNumber,
-      student.gender,
-      student.parent,
-      student.contact,
-      student.fees
-    ];
-    csvRows.push(values.join(','));
-  });
-  
-  const csvString = csvRows.join('\n');
-  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8' });
-  saveAs(blob, 'students_export.csv');
-  
-  return Promise.resolve({ success: true });
-};
-
-// Export students to Excel
-export const exportToExcel = (students = sampleStudents) => {
-  const ws = XLSX.utils.json_to_sheet(students);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Students");
-  XLSX.writeFile(wb, "students-data.xlsx");
-};
-
-// Export students to PDF
-export const exportToPDF = (students = sampleStudents) => {
-  const doc = new jsPDF();
-  const headers = [['ID', 'Name', 'Grade', 'Section', 'Admission #', 'Gender', 'Parent', 'Contact', 'Fees']];
-  const data = students.map(student => [
-    student.id,
-    student.name,
-    student.grade,
-    student.section,
-    student.admissionNumber,
-    student.gender,
-    student.parent,
-    student.contact,
-    student.fees
-  ]);
-  
-  doc.autoTable({
-    head: headers,
-    body: data,
-    startY: 20,
-    headStyles: { fillColor: [0, 128, 255], textColor: 255 },
-    styles: { fontSize: 9 }
-  });
-  
-  doc.save('students-data.pdf');
-};
-
-// Get template data
-export const getImportTemplate = () => {
-  const headers = ['Name', 'Grade', 'Section', 'Admission Number', 'Gender', 'Parent Name', 'Contact Number', 'Email', 'Address', 'Fees Status'];
-  const csvRows = [headers.join(',')];
-  const csvString = csvRows.join('\n');
-  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8' });
-  saveAs(blob, 'students_import_template.csv');
-};
-
-// Export students
-export const exportStudents = (format, students = sampleStudents) => {
-  try {
-    if (format === 'excel') {
-      exportToExcel(students);
-      return { success: true, count: students.length };
-    } else if (format === 'pdf') {
-      exportToPDF(students);
-      return { success: true, count: students.length };
-    } else {
-      return { success: false, error: 'Unsupported export format' };
-    }
-  } catch (error) {
-    return { success: false, error: error.message || 'Error exporting students' };
-  }
-};
-
 // Export all functions
 export {
-  parseCSVImport,
-  parseExcelImport,
   exportToCSV,
   exportToExcel,
   exportToPDF,
   getImportTemplate,
-  importStudents,
-  exportStudents
+  parseCSVImport,
+  parseExcelImport,
+  importStudents
 };
 
 // Default export for backward compatibility
 const mockDataHandler = {
-  parseCSVImport,
-  parseExcelImport,
   exportToCSV,
   exportToExcel,
   exportToPDF,
   getImportTemplate,
-  importStudents,
-  exportStudents
+  parseCSVImport,
+  parseExcelImport,
+  importStudents
 };
 
 export default mockDataHandler;
