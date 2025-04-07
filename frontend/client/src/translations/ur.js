@@ -80,7 +80,7 @@ const translations = {
   'add_user': 'صارف شامل کریں',
   'role': 'کردار',
   'admin': 'منتظم',
-  'staff': 'عملہ',
+  'staff_role': 'عملہ',
   'save_changes': 'تبدیلیاں محفوظ کریں',
   
   // Bulk actions
