@@ -5,7 +5,7 @@ import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
 // Sample student data
-const sampleStudents = [
+export const mockStudents = [
   { 
     _id: '1', 
     name: 'Ahmed Ali', 
@@ -49,7 +49,7 @@ const defaultColumns = {
 };
 
 // Export functions
-const exportToCSV = (students = sampleStudents) => {
+const exportToCSV = (students = mockStudents) => {
   const headers = ['ID', 'Name', 'Grade', 'Section', 'Admission Number', 'Gender', 'Parent Name', 'Contact', 'Email', 'Address', 'Fees Status'];
   const csvRows = [headers.join(',')];
   
@@ -64,7 +64,7 @@ const exportToCSV = (students = sampleStudents) => {
   return { success: true, message: 'Export successful' };
 };
 
-const exportToExcel = (students = sampleStudents) => {
+const exportToExcel = (students = mockStudents) => {
   const worksheet = XLSX.utils.json_to_sheet(students);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
@@ -72,7 +72,7 @@ const exportToExcel = (students = sampleStudents) => {
   return { success: true, message: 'Export successful' };
 };
 
-const exportToPDF = (students = sampleStudents) => {
+const exportToPDF = (students = mockStudents) => {
   const doc = new jsPDF();
   doc.autoTable({
     head: [['ID', 'Name', 'Grade', 'Section', 'Admission Number', 'Gender', 'Parent Name', 'Contact', 'Email', 'Address', 'Fees Status']],
