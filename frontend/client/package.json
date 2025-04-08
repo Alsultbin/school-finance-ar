@@ -27,7 +27,19 @@
     "xlsx": "^0.18.5",
     "twilio": "^4.13.0",
     "nodemailer": "^6.9.4",
-    "react-hot-toast": "^2.4.1"
+    "react-hot-toast": "^2.4.1",
+    "recharts": "^2.10.3",
+    "date-fns": "^2.30.0",
+    "react-datepicker": "^4.12.0",
+    "moment": "^2.29.4",
+    "lodash": "^4.17.21",
+    "react-query": "^3.39.3",
+    "socket.io-client": "^4.7.2",
+    "react-table": "^7.8.0",
+    "react-joyride": "^2.5.6",
+    "react-resizable": "^3.0.4",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.17.0",
