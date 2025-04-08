@@ -5,6 +5,7 @@
 
 [build.environment]
   REACT_APP_API_URL = "https://your-backend-url.com"  # Update this with your actual backend URL
+  NODE_ENV = "production"
 
 [dev]
   command = "npm start"
@@ -16,11 +17,29 @@
   to = "/index.html"
   status = 200
 
-[context.production.environment]
-  NODE_ENV = "production"
+[context.production]
+  command = "npm ci && npm run build"
+  environment = {
+    NODE_ENV = "production"
+  }
 
 [context.deploy-preview]
   command = "npm ci && npm run build"
+  environment = {
+    NODE_ENV = "production"
+  }
 
 [context.branch-deploy]
   command = "npm ci && npm run build"
+  environment = {
+    NODE_ENV = "production"
+  }
+
+[context.production.environment]
+  NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "production"
+
+[context.branch-deploy.environment]
+  NODE_ENV = "production"
