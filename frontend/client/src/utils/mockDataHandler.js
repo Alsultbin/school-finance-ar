@@ -34,6 +34,49 @@ export const mockStudents = [
   }
 ];
 
+// Sample financial data
+export const mockFinancialData = [
+  {
+    _id: '1',
+    studentId: '1',
+    studentName: 'Ahmed Ali',
+    feeType: 'Monthly',
+    amount: 2000,
+    dueDate: '2025-04-30',
+    paymentDate: '2025-04-01',
+    status: 'Paid',
+    paymentMethod: 'Bank Transfer',
+    referenceNumber: 'BANK123456789',
+    notes: 'Monthly fee for April 2025'
+  },
+  {
+    _id: '2',
+    studentId: '2',
+    studentName: 'Fatima Hassan',
+    feeType: 'Monthly',
+    amount: 2000,
+    dueDate: '2025-04-30',
+    paymentDate: null,
+    status: 'Pending',
+    paymentMethod: null,
+    referenceNumber: null,
+    notes: 'Monthly fee for April 2025'
+  },
+  {
+    _id: '3',
+    studentId: '1',
+    studentName: 'Ahmed Ali',
+    feeType: 'Annual',
+    amount: 24000,
+    dueDate: '2025-06-30',
+    paymentDate: null,
+    status: 'Pending',
+    paymentMethod: null,
+    referenceNumber: null,
+    notes: 'Annual fee for 2025-2026'
+  }
+];
+
 // Flexible column mapping for imports
 const defaultColumns = {
   name: ['name', 'student name', 'student_name'],
